@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd">
+
+
+	<!-- <bean class="org.springframework.http.converter.json.JacksonObjectMapperFactoryBean"> 
+		<property name="featuresToDisable"> <array> <util:constant static-field="com.fasterxml.jackson.databind.DeserializationConfig$FeatureFAIL_ON_UNKNOWN_PROPERTIES" 
+		/> <util:constant static-field="com.fasterxml.jackson.databind.DeserializationConfig$FeatureACCEPT_SINGLE_VALUE_AS_ARRAY" 
+		/> </array> </property> </bean> -->
+
+	<bean id="jacksonMessageConverter"
+		class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+		<property name="objectMapper" ref="ObjectMapper" />
+	</bean>
+
+	<bean
+		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="ObjectMapper" />
+		<property name="targetMethod" value="setPropertyNamingStrategy" />
+		<property name="arguments">
+			<list>
+				<value type="com.fasterxml.jackson.databind.PropertyNamingStrategy">CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean
+		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="messageConverters">
+			<list>
+				<ref bean="jacksonMessageConverter" />
+			</list>
+		</property>
+	</bean>
+
+	<bean id="methodHandlerExceptionResolver"
+		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolver">
+		<property name="messageConverters">
+			<list>
+				<ref bean="jacksonMessageConverter" />
+			</list>
+		</property>
+	</bean>
+
+	<!-- <bean id="jsonFactory" class="com.despegar.escuelita.json.JsonFactory"> -->
+	<!-- <property name="deserializationFeatureConfiguracion"> -->
+	<!-- <value>false</value> -->
+	<!-- </property> -->
+	<!-- </bean> -->
+
+	<bean id="AirportController" class="escuelita.controller.AirportController">
+		<property name="responseGenerator" ref="ResponseService" />
+	</bean>
+
+	<bean id="ResponseService" class="escuelita.servicios.ResponseService">
+		<property name="airportService" ref="AirportService" />
+		<property name="cityService" ref="CityService" />
+		<property name="currencyService" ref="CurrencyService" />
+	</bean>
+
+	<bean id="AirportService" class="escuelita.servicios.AirportService">
+		<property name="jasonFactory" ref="JsonFactory" />
+		<property name="httpService" ref="HttpService" />
+	</bean>
+
+	<bean id="CityService" class="escuelita.servicios.CityService">
+		<property name="jasonFactory" ref="JsonFactory" />
+		<property name="httpService" ref="HttpService" />
+	</bean>
+
+	<bean id="CurrencyService" class="escuelita.servicios.CurrencyService">
+		<property name="jasonFactory" ref="JsonFactory" />
+		<property name="httpService" ref="HttpService" />
+	</bean>
+
+	<bean id="JsonFactory" class="escuelita.servicios.json.JsonFactory" />
+
+	<bean id="HttpService" class="escuelita.servicios.HttpService" />
+
+	<bean id="ObjectMapper" class="com.fasterxml.jackson.databind.ObjectMapper" />
+
+	<context:annotation-config />
+
+</beans>
